@@ -1,0 +1,190 @@
+{
+    "pipeline": {
+        "name": "code-pipeline-1",
+        "roleArn": "arn:aws:iam::765932995230:role/AWS-CodePipeline-Service",
+        "artifactStore": {
+            "type": "S3",
+            "location": "codepipeline-us-east-2-127224142257"
+        },
+        "stages": [
+            {
+                "name": "Source",
+                "actions": [
+                    {
+                        "name": "Websource",
+                        "actionTypeId": {
+                            "category": "Source",
+                            "owner": "ThirdParty",
+                            "provider": "GitHub",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "Branch": "develop",
+                            "OAuthToken": "****",
+                            "Owner": "coopsmwc",
+                            "PollForSourceChanges": "false",
+                            "Repo": "aws_laravel_test"
+                        },
+                        "outputArtifacts": [
+                            {
+                                "name": "WebSourceArtifact"
+                            }
+                        ],
+                        "inputArtifacts": [],
+                        "region": "us-east-2"
+                    },
+                    {
+                        "name": "Apisource",
+                        "actionTypeId": {
+                            "category": "Source",
+                            "owner": "ThirdParty",
+                            "provider": "GitHub",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "Branch": "develop",
+                            "OAuthToken": "****",
+                            "Owner": "coopsmwc",
+                            "PollForSourceChanges": "false",
+                            "Repo": "aws_laravel_test_api"
+                        },
+                        "outputArtifacts": [
+                            {
+                                "name": "apiSourceArtifact"
+                            }
+                        ],
+                        "inputArtifacts": [],
+                        "region": "us-east-2"
+                    }
+                ]
+            },
+            {
+                "name": "Build",
+                "actions": [
+                    {
+                        "name": "WebBuild",
+                        "actionTypeId": {
+                            "category": "Build",
+                            "owner": "AWS",
+                            "provider": "CodeBuild",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "ProjectName": "code-build-1"
+                        },
+                        "outputArtifacts": [
+                            {
+                                "name": "WebBuildArtifact"
+                            }
+                        ],
+                        "inputArtifacts": [
+                            {
+                                "name": "WebSourceArtifact"
+                            }
+                        ],
+                        "region": "us-east-2"
+                    },
+                    {
+                        "name": "ApiBuild",
+                        "actionTypeId": {
+                            "category": "Test",
+                            "owner": "AWS",
+                            "provider": "CodeBuild",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "ProjectName": "code-build-1"
+                        },
+                        "outputArtifacts": [
+                            {
+                                "name": "apiBuildArtifact"
+                            }
+                        ],
+                        "inputArtifacts": [
+                            {
+                                "name": "apiSourceArtifact"
+                            }
+                        ],
+                        "region": "us-east-2"
+                    }
+                ]
+            },
+            {
+                "name": "ConfirmDeployment",
+                "actions": [
+                    {
+                        "name": "Confirm-deployment",
+                        "actionTypeId": {
+                            "category": "Approval",
+                            "owner": "AWS",
+                            "provider": "Manual",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {},
+                        "outputArtifacts": [],
+                        "inputArtifacts": [],
+                        "region": "us-east-2"
+                    }
+                ]
+            },
+            {
+                "name": "deploy-to-dev",
+                "actions": [
+                    {
+                        "name": "WebB-deploy",
+                        "actionTypeId": {
+                            "category": "Deploy",
+                            "owner": "AWS",
+                            "provider": "ElasticBeanstalk",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "ApplicationName": "terraform-test",
+                            "EnvironmentName": "laravel-dev-1"
+                        },
+                        "outputArtifacts": [],
+                        "inputArtifacts": [
+                            {
+                                "name": "WebBuildArtifact"
+                            }
+                        ],
+                        "region": "us-east-2"
+                    },
+                    {
+                        "name": "Api-deploy",
+                        "actionTypeId": {
+                            "category": "Deploy",
+                            "owner": "AWS",
+                            "provider": "ElasticBeanstalk",
+                            "version": "1"
+                        },
+                        "runOrder": 1,
+                        "configuration": {
+                            "ApplicationName": "terraform-test",
+                            "EnvironmentName": "laravel-dev-api"
+                        },
+                        "outputArtifacts": [],
+                        "inputArtifacts": [
+                            {
+                                "name": "apiBuildArtifact"
+                            }
+                        ],
+                        "region": "us-east-2"
+                    }
+                ]
+            }
+        ],
+        "version": 12
+    },
+    "metadata": {
+        "pipelineArn": "arn:aws:codepipeline:us-east-2:765932995230:code-pipeline-1",
+        "created": 1552409435.622,
+        "updated": 1553598521.071
+    }
+}
